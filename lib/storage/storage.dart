@@ -23,7 +23,7 @@ class Storage {
   }
 
   addEntry(Entry e) async {
-      String key = e.category+'-'+e.id;
+      String key = e.category+'-'+e.date+"-"+e.id;
       jsonStore.setItem(key, e.toJson());
   }
 
@@ -32,8 +32,13 @@ class Storage {
     return json.map((entry) => Entry.fromJson(entry)).toList();
   }
 
+  getEntriesByDate(String categoryName, String date) async{
+    List<Map<String, dynamic>> json = await jsonStore.getListLike(categoryName+'-'+date+'%')??[];
+    return json.map((entry) => Entry.fromJson(entry)).toList();
+  }
+
   removeEntry(Entry e){
-    String key = e.category+'-'+e.id;
+    String key = e.category+'-'+"-"+e.id;
     jsonStore.deleteItem(key);
   }
 
