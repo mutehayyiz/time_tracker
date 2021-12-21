@@ -36,7 +36,7 @@ class TimeTrackerApp extends StatefulWidget {
 
 class _TimeTrackerAppState extends State<TimeTrackerApp> {
   var screens = const [
-   // Home(),
+    Home(),
     CategoriesPage(),
     ActivityOne(),
 
@@ -49,12 +49,12 @@ class _TimeTrackerAppState extends State<TimeTrackerApp> {
       backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
         items: const [
-          /*
+
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: "home",
           ),
-           */
+
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: "home",
