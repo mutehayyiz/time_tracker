@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:time_tracker/storage/storage.dart';
 
 class Home extends StatelessWidget {
-  const Home({Key? key}) : super(key: key);
+
+  Home({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,12 +26,24 @@ class Home extends StatelessWidget {
         // content will be here
 
         child: Center(
-          child: FloatingActionButton(
-            backgroundColor: Colors.white,
-            child: const Text("Drop"),
-            onPressed: () {
-              Storage().dropDatabase();
-            },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              FloatingActionButton(
+                backgroundColor: Colors.white,
+                child: const Text("Drop"),
+                onPressed: () {
+                  Storage().dropDatabase();
+                },
+              ),
+              FloatingActionButton(
+                backgroundColor: Colors.white,
+                child: const Text("get"),
+                onPressed: (){
+                  Storage().addFromRemote();
+                }
+              ),
+            ],
           ),
         ),
       ),

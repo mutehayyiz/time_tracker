@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/src/provider.dart';
+import 'package:time_tracker/controller/provider.dart';
+import 'package:time_tracker/controller/remote.dart';
 import 'package:time_tracker/model/category.dart';
 import 'package:time_tracker/pages/activity_one.dart';
 import 'package:time_tracker/storage/storage.dart';
@@ -17,14 +20,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getCategories();
   }
 
   getCategories() async {
     var list = await Storage().getCategories();
-
     setState(() {
       categoryList = list;
     });
@@ -40,17 +41,20 @@ class _CategoriesPageState extends State<CategoriesPage> {
     }
 
     Storage().addCategory(c);
+    Remote().addCategory(c);
 
     categoryList.add(c);
-
     return true;
   }
 
   removeCategory(int index) {
+    Storage().deleteCategory(categoryList[index]);
+    Remote().deleteCategory(categoryList[index]);
+
     setState(() {
-      Storage().removeCategory(categoryList[index]);
       categoryList = List.from(categoryList)..removeAt(index);
     });
+
   }
 
   @override
@@ -75,12 +79,15 @@ class _CategoriesPageState extends State<CategoriesPage> {
               Icons.account_circle,
             ),
             onPressed: () {
+              /*
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ActivityOne(),
+                  builder: (context) => ActivityOne(get),
                 ),
               );
+
+               */
             },
           ),
         ],
