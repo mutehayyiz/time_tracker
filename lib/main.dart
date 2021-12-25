@@ -57,8 +57,8 @@ class _TimeTrackerAppState extends State<TimeTrackerApp> {
   getSelectedTab() {
     if (selectedTab == 2) {
       return ActivityOne(
-        dateList : dateList,
-        totalList: totalList,
+        //dateList : dateList,
+        //totalList: totalList,
       );
     }
     var screens =  [
@@ -104,6 +104,9 @@ class _TimeTrackerAppState extends State<TimeTrackerApp> {
       var tlist = await Remote().totalByDate(list[i]);
       ttList.add(tlist);
     }
+
+
+
 
     setState(() {
       dateList = list;

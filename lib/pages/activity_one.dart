@@ -1,12 +1,15 @@
-
 import 'dart:io';
-import 'package:flutter/material.dart' ;
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio hide  Column, Alignment;
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio
+    hide Column, Alignment;
 import 'package:syncfusion_officechart/officechart.dart';
 import 'package:time_tracker/components/date_picker.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:time_tracker/controller/remote.dart';
 import 'package:time_tracker/model/total.dart';
 import 'package:time_tracker/pages/pdf.dart';
 import 'package:time_tracker/storage/storage.dart';
@@ -14,24 +17,15 @@ import '../common.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:path_provider/path_provider.dart';
 
-
 class ActivityOne extends StatefulWidget {
-  final List<List<Total>> totalList;
-  final List<String> dateList;
-
-
-  const ActivityOne({Key? key,required this.dateList, required this.totalList}) : super(key: key);
+  const ActivityOne({Key? key}) : super(key: key);
 
   @override
   State<ActivityOne> createState() => _ActivityOneState();
 }
 
 class _ActivityOneState extends State<ActivityOne>
-    with SingleTickerProviderStateMixin {
-  late TabController tabController;
-
-  late Future<List<List<Total>>> futureTotalList;
-
+    with AutomaticKeepAliveClientMixin {
   List<String> dayList = [
     "Monday",
     "Tuesday",
@@ -45,59 +39,69 @@ class _ActivityOneState extends State<ActivityOne>
   late int index;
   late String currentDate;
   late String currentDateTop;
-  late List<String> dateList = [];
-  late List<List<Total>> totalList = [];
 
-  loadTotalList() async{
-    futureTotalList = Storage().getDays();
+  late PageController _pageController;
+
+  late List<String> futureDateList = []; // = loadDateList();
+
+  bool isLoaded = false;
+
+  Future<List<String>> loadDateList() async {
+    var list = await Remote().getDays();
+
+    return list;
+  }
+
+  Future<bool> getDaysFromRemote() async {
+    var list = await Remote().getDays();
+
+    if (!list.contains(currentDate)) {
+      list.add(currentDate);
+    }
+
+    list.sort();
+
+    var min = ymdToDate(list[0]);
+
+    for (int i = 1; i < list.length; i++) {
+      var exists = ymdToString(min.add(Duration(days: i)));
+      if (!list.contains(exists)) {
+        list.add(exists);
+      }
+    }
+
+    list.sort();
+
+    setState(() {
+      futureDateList = list;
+      isLoaded = true;
+    });
+
+    print(futureDateList.indexOf(currentDate));
+    _pageController =
+        PageController(initialPage: futureDateList.indexOf(currentDate));
+
+    return true;
+  }
+
+  Future<List<Total>> loadTotalList(String date) async {
+    return await Remote().totalByDate(date);
   }
 
   @override
   void initState() {
     super.initState();
 
-    totalList = widget.totalList;
-    dateList = widget.dateList;
-
     var today = DateTime.now();
     currentDate = ymdToString(today);
     currentDateTop = getFormatted(today);
 
-    index = dateList.indexOf(currentDate);
-/*
-    for(int i=0;i< totalList.length; i++){
-      for(int j=0;j<totalList[i].length;j++){
-        String columnName=String.fromCharCode(65+j)+"${i+2}";
-
-        print(columnName + " : ${totalList[i][j].total}  :  ${totalList[i][j].category}");
-      }
-    }
-
-
- */
-
-    initTabController();
-  }
-
-  initTabController(){
-    tabController = TabController(
-        vsync: this, length: dateList.length, initialIndex: index);
-
-    tabController.addListener(() {
-      if (!tabController.indexIsChanging) {
-        setState(() {
-          currentDate = dateList[tabController.index];
-          currentDateTop = getFormatted(ymdToDate(currentDate));
-          index = tabController.index;
-        });
-      }
-      // Tab Changed swiping
-    });
+    getDaysFromRemote();
   }
 
   @override
   void dispose() {
-    tabController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -106,131 +110,204 @@ class _ActivityOneState extends State<ActivityOne>
     setState(() {
       currentDate = ymdToString(c);
       currentDateTop = getFormatted(c);
-      tabController.animateTo(dateList.indexOf(currentDate));
+      _pageController.jumpToPage(futureDateList.indexOf(currentDate));
     });
   }
 
   final PanelController _panelController = PanelController();
 
-
   @override
   Widget build(BuildContext context) {
     return SlidingUpPanel(
-      color: Colors.transparent,
-      controller: _panelController,
-      backdropColor: Colors.grey,
-      renderPanelSheet: true,
-      backdropEnabled: true,
-      minHeight: 0,
-      maxHeight: MediaQuery.of(context).size.height * 0.8,
-      panel: DatePicker(
-        callback: _onDatePicked,
-        minDate: ymdToDate(dateList[0]),
-      ),
-      body: Scaffold(
-        backgroundColor: Colors.black,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          toolbarTextStyle: const TextStyle(color: Colors.white),
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.black.withOpacity(0.5).withAlpha(200),
-          centerTitle: true,
-          title: Text(
-            currentDateTop,
-            style: const TextStyle(
-              color: Colors.white,
+        color: Colors.transparent,
+        controller: _panelController,
+        backdropColor: Colors.grey,
+        renderPanelSheet: true,
+        backdropEnabled: true,
+        minHeight: 0,
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+        panel: isLoaded == true
+            ? DatePicker(
+                callback: _onDatePicked, minDate: ymdToDate(futureDateList[0]))
+            : Center(child: CircularProgressIndicator()),
+        body: Scaffold(
+          backgroundColor: Colors.black,
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            toolbarTextStyle: const TextStyle(color: Colors.white),
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.black.withOpacity(0.5).withAlpha(200),
+            centerTitle: true,
+            title: Text(
+              currentDateTop,
+              style: const TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.calendar_today, color: Colors.amber),
+                onPressed: () {
+                  //TODO change this
+                  _panelController.open();
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.ios_share),
+                onPressed: _generateExcel,
+              ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(80),
+              child: isLoaded == true
+                  ? DefaultTabController(
+                      initialIndex: futureDateList.length - 1,
+                      length: futureDateList.length,
+                      child: TabBar(
+                        physics: const PageScrollPhysics(),
+                        isScrollable: true,
+                        onTap: (index) {
+                          _pageController.jumpToPage(index);
+                          setState(() {
+                            currentDate = futureDateList[index];
+                            currentDateTop =
+                                getFormatted(ymdToDate(currentDate));
+                          });
+                        },
+                        tabs: futureDateList
+                            .map((i) => Tab(
+                                  icon: Icon(Icons.circle_outlined,
+                                      color: i == currentDate
+                                          ? Colors.amber
+                                          : Colors.grey),
+                                  child: Text(
+                                    dayList[ymdToDate(i).weekday - 1]
+                                        .substring(0, 2),
+                                  ),
+                                ))
+                            .toList(),
+                        automaticIndicatorColorAdjustment: true,
+                        indicatorColor: Colors.black,
+                        indicatorSize: TabBarIndicatorSize.label,
+                        unselectedLabelColor: Colors.grey,
+                        labelColor: Colors.white,
+                      ),
+                    )
+                  : const Center(
+                      child: Text(
+                        "Loading...",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
             ),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.calendar_today, color: Colors.amber),
-              onPressed: () {
-                //TODO change this
-                _panelController.open();
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.ios_share),
-              onPressed: _generateExcel,
-            ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(80),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                TabBar(
+          body: isLoaded == true
+              ? PageView.builder(
+                  itemCount: futureDateList.length,
+                  scrollDirection: Axis.horizontal,
                   physics: const PageScrollPhysics(),
-                  isScrollable: true,
-                  onTap: (x) {
+                  controller: _pageController,
+                  onPageChanged: (i) {
                     setState(() {
-                      index = x;
+                      currentDate = futureDateList[i];
+                      currentDateTop = getFormatted(ymdToDate(currentDate));
                     });
                   },
-                  controller: tabController,
-                  tabs: dateList
-                      .map((i) => Tab(
-                    icon: Icon(Icons.circle_outlined,
-                        color: dateList.indexOf(i) == index
-                            ? Colors.amber
-                            : Colors.grey),
-                    child:  Text(
-                      dayList[ymdToDate(i).weekday - 1].substring(0, 2),
-                      // i.substring(i.length-2),
-                    ),
-                  ))
-                      .toList(),
-                  automaticIndicatorColorAdjustment: true,
-                  indicatorColor: Colors.amber,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  unselectedLabelColor: Colors.grey,
-                  labelColor: Colors.white,
-                ),
-              ],
-            ),
-          ),
-        ),
-        body:
-        Stack(
-          children: [
-            TabBarView(
-              controller: tabController,
-              children: totalList.map((d) {
-                return _getGraphicBox(d);
-              }).toList(),
-
-            ),
-          ],
-        ),
-
-      ),
-    );
+                  itemBuilder: (context, index) {
+                    return _getGraphicBox(futureDateList[index]);
+                  },
+                )
+              : const Center(child: CircularProgressIndicator()),
+        ));
   }
 
-
-  Widget _getGraphicBox(List<Total> data) {
-            return Row(
+  Widget _getGraphicBox(String date) {
+    return FutureBuilder<List<Total>>(
+        future: loadTotalList(date),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            return ListView(
+              scrollDirection: Axis.vertical,
+              shrinkWrap: true,
               children: [
-                SfCircularChart(
-                  title: ChartTitle(text: 'Sales by sales person'),
-                  legend: Legend(isVisible: true),
-                  series:
-                  <PieSeries<Total, String>>[
-                    PieSeries<Total, String>(
-                        explode: true,
-                        explodeIndex: 0,
-                        explodeOffset: '10%',
-                        dataSource: data,
-                        xValueMapper: (Total data, _) => data.category,
-                        yValueMapper: (Total data, _) => data.total,
-                        dataLabelMapper: (Total data, _) => "${data.category} \n ${data.total}",
-                        startAngle: 90,
-                        endAngle: 90,
-                        dataLabelSettings: const DataLabelSettings(isVisible: true)),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SfCircularChart(
+                      title: ChartTitle(
+                        text: date,
+                        textStyle: const TextStyle(color: Colors.white),
+                      ),
+                      legend: Legend(
+                        isVisible: true,
+                        overflowMode: LegendItemOverflowMode.wrap,
+                        orientation: LegendItemOrientation.horizontal,
+                        position: LegendPosition.bottom,
+                        textStyle:
+                            const TextStyle(color: Colors.white, fontSize: 15),
+                      ),
+                      series: <PieSeries<Total, String>>[
+                        PieSeries<Total, String>(
+                          explode: true,
+                          explodeAll: true,
+                          explodeIndex: 0,
+                          explodeOffset: '5%',
+                          dataSource: snapshot.data,
+                          xValueMapper: (Total data, _) => data.category,
+                          yValueMapper: (Total data, _) => data.total,
+                          dataLabelMapper: (Total data, _) =>
+                              "${data.category} \n ${data.total}",
+                          startAngle: 90,
+                          endAngle: 90,
+                          dataLabelSettings: const DataLabelSettings(
+                            color: Colors.white,
+                            isVisible: true,
+                            labelPosition: ChartDataLabelPosition.outside,
+                            showCumulativeValues: true,
+                            showZeroValue: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0),
+                      child: Column(
+                        children: snapshot.data.map<Widget>(
+                          (d) {
+                            return Container(
+                              margin: EdgeInsets.symmetric(horizontal: 60),
+                              child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "${d.category}",
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    Text(
+                                      toHMS(d.seconds),
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ]),
+                            );
+                          },
+                        ).toList(),
+                      ),
+                    ),
                   ],
-                ),
+                )
               ],
             );
+          }
+          return const Center(child: CircularProgressIndicator());
+        });
   }
 
   Future<void> _generateExcel() async {
@@ -315,9 +392,6 @@ class _ActivityOneState extends State<ActivityOne>
     sheet2.getRangeByName('C1').columnWidth = 22.27;
     sheet2.getRangeByName('D1').columnWidth = 9.27;
     sheet2.getRangeByName('E1').columnWidth = 9.27;
-
-
-
 
     sheet2.getRangeByName('A1').text = 'Months';
     sheet2.getRangeByName('B1').text = 'Internet Sales Amount';
@@ -411,10 +485,6 @@ class _ActivityOneState extends State<ActivityOne>
     sheet2.getRangeByName('A14:E14').cellStyle.backColor = '#C6E0B4';
     sheet2.getRangeByName('A14:E14').cellStyle.bold = true;
     sheet.getRangeByName('G30').text = '.';
-
-
-
-
 
     final List<int> bytes = workbook.saveAsStream();
     workbook.dispose();
@@ -541,6 +611,9 @@ class _ActivityOneState extends State<ActivityOne>
     ];
   }
 
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
 
 class FileSaveHelper {
@@ -555,7 +628,7 @@ class FileSaveHelper {
     path = directory.path;
 
     final File file =
-    File(Platform.isWindows ? '$path\\$fileName' : '$path/$fileName');
+        File(Platform.isWindows ? '$path\\$fileName' : '$path/$fileName');
     await file.writeAsBytes(bytes, flush: true);
     if (Platform.isAndroid || Platform.isIOS) {
       final Map<String, String> argument = <String, String>{
@@ -564,7 +637,7 @@ class FileSaveHelper {
       try {
         //ignore: unused_local_variable
         final Future<Map<String, String>?> result =
-        _platformCall.invokeMethod('viewExcel', argument);
+            _platformCall.invokeMethod('viewExcel', argument);
       } catch (e) {
         throw Exception(e);
       }
