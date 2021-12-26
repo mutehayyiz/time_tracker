@@ -164,7 +164,7 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
                     ? EdgeInsets.all(MediaQuery.of(context).size.width / 3 / 6)
                     : const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  border: Border.all(width: 2, color: Colors.white),
+                  border: Border.all(width: 1, color: Colors.white),
                   shape: BoxShape.circle,
                 ),
                 child: Container(
