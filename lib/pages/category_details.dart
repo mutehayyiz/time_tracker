@@ -160,14 +160,14 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
               onTap: () => handleRecord(),
               child: Container(
                 margin: const EdgeInsets.all(20),
+                padding: isRecording
+                    ? EdgeInsets.all(MediaQuery.of(context).size.width / 3 / 6)
+                    : const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  border: Border.all(width: 4, color: Colors.white),
+                  border: Border.all(width: 2, color: Colors.white),
                   shape: BoxShape.circle,
                 ),
                 child: Container(
-                  margin: isRecording
-                      ? const EdgeInsets.symmetric(vertical: 12, horizontal: 12)
-                      : const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     shape: isRecording ? BoxShape.rectangle : BoxShape.circle,
