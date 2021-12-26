@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:time_tracker/common.dart';
-import 'package:time_tracker/controller/provider.dart';
 import 'package:time_tracker/controller/remote.dart';
 import 'package:time_tracker/controller/timer_controller.dart';
 import 'package:time_tracker/model/entry.dart';
@@ -41,7 +40,7 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
 
   addNewEntry(Entry e) async {
     e.category = widget.name.toLowerCase();
-    e.id="";
+    e.id = "";
 
     var id = await Remote().addEntry(e);
     e.id = id;
@@ -57,7 +56,6 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
     Remote().removeEntry(widget.name.toLowerCase(), entryList[index].id);
 
     setState(() {
-
       entryList = List.from(entryList)..removeAt(index);
     });
   }

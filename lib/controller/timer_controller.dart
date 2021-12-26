@@ -1,40 +1,37 @@
 import 'dart:async';
-
-import 'package:intl/intl.dart';
 import 'package:time_tracker/model/entry.dart';
-
 import '../common.dart';
 
 class TimerController {
   late int counter;
   late Timer periodic;
-  late DateTime started_at;
-  late DateTime stopped_at;
+  late DateTime _start;
+  late DateTime _stop;
 
   TimerController() {
     resetCounter();
   }
 
   start(getCounter) {
-    started_at = DateTime.now();
+    _start = DateTime.now();
     periodic = Timer.periodic(const Duration(seconds: 1), (timer) {
-      counter ++ ;
+      counter++;
       getCounter(counter);
     });
   }
 
   Entry stop() {
     periodic.cancel();
-    stopped_at = DateTime.now();
+    _stop = DateTime.now();
     resetCounter();
 
-    int diff = differenceToInt(stopped_at, started_at);
+    int diff = differenceToInt(_stop, _start);
 
     Entry entry = Entry();
-    entry.start = hmsToString(started_at);
-    entry.stop = hmsToString(stopped_at);
+    entry.start = hmsToString(_start);
+    entry.stop = hmsToString(_start);
     entry.seconds = diff;
-    entry.date = ymdToString(started_at);
+    entry.date = ymdToString(_start);
 
     return entry;
   }
@@ -42,5 +39,4 @@ class TimerController {
   resetCounter() {
     counter = 0;
   }
-
 }

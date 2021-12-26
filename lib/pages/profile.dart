@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:time_tracker/storage/storage.dart';
 
-class Home extends StatelessWidget {
-
-  Home({Key? key}) : super(key: key);
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +36,11 @@ class Home extends StatelessWidget {
                 },
               ),
               FloatingActionButton(
-                backgroundColor: Colors.white,
-                child: const Text("get"),
-                onPressed: (){
-                  Storage().addFromRemote();
-                }
-              ),
+                  backgroundColor: Colors.white,
+                  child: const Text("get"),
+                  onPressed: () {
+                    Storage().addFromRemote();
+                  }),
             ],
           ),
         ),

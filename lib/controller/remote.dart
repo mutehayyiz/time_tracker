@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:time_tracker/model/category.dart';
 import 'package:time_tracker/model/entry.dart';
 import 'package:http/http.dart' as http;
@@ -68,7 +66,6 @@ class Remote {
   Future<List<String>> getDays() async {
     var url = Uri.parse("http://localhost:4242/days");
     final response = await http.get(url);
-
     return List<String>.from(json.decode(response.body).map((x) => x)).toList();
   }
 
