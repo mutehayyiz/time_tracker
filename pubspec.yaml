@@ -32,18 +32,14 @@ dependencies:
 
     # The following adds the Cupertino Icons font to your application.
     # Use with the CupertinoIcons class for iOS style icons.
-  syncfusion_flutter_calendar: ^19.3.43
   syncfusion_flutter_datepicker: ^19.3.43
   syncfusion_flutter_charts: ^19.3.43
   syncfusion_flutter_xlsio: ^19.3.43
-  syncfusion_officechart: ^19.3.43
   intl: ^0.17.0
   http: ^0.13.4
   json_store: ^2.0.0-nullsafety.0
   flutter_slidable: ^1.1.0
   sliding_up_panel: ^2.0.0+1
-  provider: ^6.0.0
-
 
 dev_dependencies:
   flutter_test:
