@@ -1,9 +1,10 @@
 class Total {
-  String category;
-  String date;
+  late String category;
+  late String date;
+  late double total;
+  late int seconds;
 
-  double total;
-  int seconds;
+  Total();
 
   Total.fromJson(Map<String, dynamic> json)
       : category = json["category"],
