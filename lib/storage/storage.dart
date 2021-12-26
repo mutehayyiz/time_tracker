@@ -15,7 +15,6 @@ class Storage {
   }
 
   getCategories() async {
-    //TODO var list= await Remote().getCategories();
     List<Map<String, dynamic>> json =
         await jsonStore.getListLike('category-%') ?? [];
     return json.map((category) => Category.fromJson(category)).toList();
@@ -54,36 +53,50 @@ class Storage {
       }
     }
 
-    print(dateList);
     return dateList;
   }
 
-  Future<List<Total>> totalByDate(String date) async {
-    var key = "entry-" + date + "-%";
+  totalByDate(String date) async {
+    String key = "entry-" + date + "-%";
     List<Map<String, dynamic>> data = await jsonStore.getListLike(key) ?? [];
     List<Entry> entries = data.map((entry) => Entry.fromJson(entry)).toList();
 
     List<Total> totals = [];
 
-    List<String> categories = [];
+    List<String> categorNames = [];
+
+    List<Category> categories = await getCategories();
+
+    for (var c in categories) {
+      categorNames.add(c.name);
+    }
+
+    for (String category in categorNames) {
+      Total t = Total();
+      t.date = date;
+      t.seconds = 0;
+      t.category = category;
+      totals.add(t);
+    }
+
+    int dailyTotalSeconds = 0;
 
     for (Entry entry in entries) {
-      if (!categories.contains(entry.date)) {
-        categories.add(entry.date);
-        Total tmp = Total();
-        print(entry.category);
-        tmp.category = entry.category;
-        tmp.date = date;
-        tmp.seconds = entry.seconds;
-        totals.add(tmp);
-      } else {
-        int index = categories.indexOf(entry.category);
-        totals[index].seconds += entry.seconds;
-      }
+      dailyTotalSeconds += entry.seconds;
+      int index = categorNames.indexOf(entry.category);
+      totals[index].seconds += entry.seconds;
     }
+
+    Total other = Total();
+    other.category = "other";
+    other.date = date;
+    other.seconds = 86400 - dailyTotalSeconds;
+
+    totals.add(other);
+
     for (Total t in totals) {
-      t.total = 100 * t.seconds.toDouble() / 86400.0;
-      print(t.category +" ${t.seconds} ${t.total} ${t.date}");
+      t.total = double.parse(
+          (100 * t.seconds.toDouble() / 86400.0).toStringAsFixed(2));
     }
 
     return totals;

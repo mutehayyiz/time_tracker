@@ -9,7 +9,7 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Activity",
+          "Profile",
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -30,7 +30,7 @@ class ProfilePage extends StatelessWidget {
             children: [
               FloatingActionButton(
                 backgroundColor: Colors.white,
-                child: const Text("Drop"),
+                child: const Text("drop"),
                 onPressed: () {
                   Storage().dropDatabase();
                 },

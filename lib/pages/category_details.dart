@@ -31,7 +31,7 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
   }
 
   getEntries() async {
-    var list = await Storage().getEntriesByDate(widget.name, date);
+    var list = await Storage().getEntriesByDateAndCategory(widget.name, date);
 
     setState(() {
       entryList = list;
@@ -140,7 +140,7 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
 
   Widget _recordBox() {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.2,
+      height: MediaQuery.of(context).size.width / 3,
       width: double.maxFinite,
       decoration: const BoxDecoration(
         color: Color.fromRGBO(58, 58, 60, 1),
@@ -166,13 +166,13 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
                 ),
                 child: Container(
                   margin: isRecording
-                      ? const EdgeInsets.symmetric(vertical: 40, horizontal: 20)
+                      ? const EdgeInsets.symmetric(vertical: 12, horizontal: 12)
                       : const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     shape: isRecording ? BoxShape.rectangle : BoxShape.circle,
                     borderRadius: isRecording
-                        ? const BorderRadius.all(Radius.circular(10))
+                        ? const BorderRadius.all(Radius.circular(7))
                         : null,
                   ),
                 ),

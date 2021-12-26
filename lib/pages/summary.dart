@@ -7,8 +7,8 @@ import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio
     hide Column, Alignment;
 import 'package:time_tracker/controller/date_picker.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:time_tracker/controller/remote.dart';
 import 'package:time_tracker/model/total.dart';
+import 'package:time_tracker/storage/storage.dart';
 import '../common.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:path_provider/path_provider.dart';
@@ -40,8 +40,8 @@ class _SummaryState extends State<Summary> with AutomaticKeepAliveClientMixin {
 
   bool isLoaded = false;
 
-  Future<bool> getDaysFromRemote() async {
-    var list = await Remote().getDays();
+  Future<bool> getDaysFromStorage() async {
+    var list = await Storage().getDays();
 
     if (!list.contains(currentDate)) {
       list.add(currentDate);
@@ -72,7 +72,7 @@ class _SummaryState extends State<Summary> with AutomaticKeepAliveClientMixin {
   }
 
   Future<List<Total>> loadTotalList(String date) async {
-    return await Remote().totalByDate(date);
+    return await Storage().totalByDate(date);
   }
 
   @override
@@ -83,7 +83,7 @@ class _SummaryState extends State<Summary> with AutomaticKeepAliveClientMixin {
     currentDate = ymdToString(today);
     currentDateTop = getFormatted(today);
 
-    getDaysFromRemote();
+    getDaysFromStorage();
   }
 
   @override
@@ -317,7 +317,7 @@ class _SummaryState extends State<Summary> with AutomaticKeepAliveClientMixin {
     List<int> categoryTotals = [];
 
     for (int i = 0; i < futureDateList.length; i++) {
-      var dayInfo = await Remote().totalByDate(futureDateList[i]);
+      var dayInfo = await loadTotalList(futureDateList[i]);
       dayInfo.sort((b, a) => a.category.compareTo(b.category));
       lastColumn = dayInfo.length + 1;
 
