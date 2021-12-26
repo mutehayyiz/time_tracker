@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:time_tracker/common.dart';
+import 'package:time_tracker/controller/remote.dart';
 import 'package:time_tracker/controller/timer_controller.dart';
 import 'package:time_tracker/model/entry.dart';
 import 'package:time_tracker/storage/storage.dart';
@@ -14,9 +16,11 @@ class CategoryDetailsPage extends StatefulWidget {
 
 class _CategoryDetailsPage extends State<CategoryDetailsPage> {
   List<Entry> entryList = [];
+
   late bool isRecording;
   late String timerString;
   TimerController timer = TimerController();
+  String date = ymdToString(DateTime.now());
 
   @override
   void initState() {
@@ -27,28 +31,34 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
   }
 
   getEntries() async {
-    var list = await Storage().getEntries(widget.name);
+    var list = await Storage().getEntriesByDate(widget.name, date);
 
     setState(() {
       entryList = list;
     });
   }
 
-  addNewEntry(Entry e) {
+  addNewEntry(Entry e) async {
     e.category = widget.name.toLowerCase();
-    e.id = e.start;
+    e.id = "";
+
+    var id = await Remote().addEntry(e);
+    e.id = id;
+
     Storage().addEntry(e);
+
     entryList.add(e);
     return true;
   }
 
   void removeEntry(int index) {
+    Storage().removeEntry(entryList[index]);
+    Remote().removeEntry(widget.name.toLowerCase(), entryList[index].id);
+
     setState(() {
-      Storage().removeEntry(entryList[index]);
       entryList = List.from(entryList)..removeAt(index);
     });
   }
-
 
   void handleRecord() {
     if (isRecording) {
@@ -68,14 +78,6 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
     setState(() {
       isRecording = isRecording == false;
     });
-  }
-
-  String toHMS(int i) {
-    Duration diff = Duration(seconds: i);
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String twoDigitMinutes = twoDigits(diff.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(diff.inSeconds.remainder(60));
-    return "${twoDigits(diff.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
   @override
@@ -113,7 +115,7 @@ class _CategoryDetailsPage extends State<CategoryDetailsPage> {
             child: Card(
               child: ListTile(
                 tileColor: Colors.black87,
-                leading: Text(toHMS(entryList[index].diff),
+                leading: Text(toHMS(entryList[index].seconds),
                     style: const TextStyle(color: Colors.white, fontSize: 20)),
                 //same over here
                 title: Column(children: [

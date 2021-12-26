@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:time_tracker/model/category.dart';
-import 'package:time_tracker/pages/activity_one.dart';
+import 'package:time_tracker/pages/summary.dart';
 import 'package:time_tracker/pages/category.dart';
-import 'pages/home.dart';
+import 'pages/profile.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,13 +33,24 @@ class TimeTrackerApp extends StatefulWidget {
 }
 
 class _TimeTrackerAppState extends State<TimeTrackerApp> {
-  var screens = const [
-   // Home(),
-    CategoriesPage(),
-    ActivityOne(),
-
-  ];
   int selectedTab = 0;
+
+  getSelectedTab() {
+    var screens = [
+      const CategoriesPage(),
+      const Summary(),
+      ProfilePage(),
+    ];
+
+    return screens[selectedTab];
+  }
+
+  // secondary
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,19 +58,19 @@ class _TimeTrackerAppState extends State<TimeTrackerApp> {
       backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
         items: const [
-          /*
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "home",
-          ),
-           */
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: "home",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.credit_card),
-            label: "card",
+            label: "summary",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.account_circle,
+            ),
+            label: "profile",
           ),
         ],
         onTap: (index) {
@@ -72,7 +81,7 @@ class _TimeTrackerAppState extends State<TimeTrackerApp> {
         showUnselectedLabels: true,
         iconSize: 30,
       ),
-      body: screens[selectedTab],
+      body: getSelectedTab(),
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:time_tracker/controller/remote.dart';
 import 'package:time_tracker/model/category.dart';
-import 'package:time_tracker/pages/activity_one.dart';
 import 'package:time_tracker/storage/storage.dart';
 import 'category_details.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -17,14 +17,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getCategories();
   }
 
   getCategories() async {
     var list = await Storage().getCategories();
-
     setState(() {
       categoryList = list;
     });
@@ -40,15 +38,17 @@ class _CategoriesPageState extends State<CategoriesPage> {
     }
 
     Storage().addCategory(c);
+    Remote().addCategory(c);
 
     categoryList.add(c);
-
     return true;
   }
 
   removeCategory(int index) {
+    Storage().deleteCategory(categoryList[index]);
+    Remote().deleteCategory(categoryList[index]);
+
     setState(() {
-      Storage().removeCategory(categoryList[index]);
       categoryList = List.from(categoryList)..removeAt(index);
     });
   }
@@ -67,31 +67,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
             fontSize: 20,
           ),
         ),
-        actions: [
-          IconButton(
-            color: Colors.white,
-            iconSize: 40,
-            icon: const Icon(
-              Icons.account_circle,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ActivityOne(),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: Container(
         height: MediaQuery.of(context).size.height,
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         color: Colors.black,
-        // content will be here
-
         child: ListView(
           scrollDirection: Axis.vertical,
           children: [

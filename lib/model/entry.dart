@@ -3,23 +3,25 @@ class Entry {
   late String category;
   late String start;
   late String stop;
-  late int diff;
+  late int seconds;
   late String date;
 
   Entry();
 
   Entry.fromJson(Map<String, dynamic> json)
       : id = json["id"],
-        start = json['started_at'],
-        stop = json['ended_at'],
-        diff = json['difference'],
-        category = json['category'];
+        start = json['start'],
+        stop = json['stop'],
+        seconds = json['seconds'],
+        category = json['category'],
+        date = json['date'];
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'started_at': start,
-        'ended_at': stop,
-        'difference': diff,
+        'date': date,
+        'start': start,
+        'stop': stop,
+        'seconds': seconds,
         'category': category,
       };
 }
