@@ -29,7 +29,7 @@ class TimerController {
 
     Entry entry = Entry();
     entry.start = hmsToString(_start);
-    entry.stop = hmsToString(_start);
+    entry.stop = hmsToString(_stop);
     entry.seconds = diff;
     entry.date = ymdToString(_start);
 

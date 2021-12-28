@@ -84,7 +84,9 @@ class Storage {
     for (Entry entry in entries) {
       dailyTotalSeconds += entry.seconds;
       int index = categorNames.indexOf(entry.category);
-      totals[index].seconds += entry.seconds;
+      if (index != -1) {
+        totals[index].seconds += entry.seconds;
+      }
     }
 
     Total other = Total();
