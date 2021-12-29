@@ -20,7 +20,6 @@ class MyApp extends StatelessWidget {
       ),
 
       home: const TimeTrackerApp(),
-      //home: const Home(),
     );
   }
 }
@@ -39,7 +38,7 @@ class _TimeTrackerAppState extends State<TimeTrackerApp> {
     var screens = [
       const CategoriesPage(),
       const Summary(),
-      ProfilePage(),
+      const ProfilePage(),
     ];
 
     return screens[selectedTab];
